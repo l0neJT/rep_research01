@@ -20,20 +20,59 @@ dat <- read.csv("./data/activity.csv")
 dat <- transform(dat, date = as.Date(date, format = "%Y-%m-%d"))
 str(dat)
 ```
+4. Remove NAs for first analyses
+```{r removeNAs}
+datNoNA <- dat[!is.na(dat$steps), ]
+```
 
 ### What is mean total number of steps taken per day?
 1. Summarise steps by date (excluding NAs)
-```{r sumStepsNoNAs}
-stepsNoNA <- ddply(dat[!is.na(dat$steps), ], "date", summarise, steps = sum(steps))
+```{r sumStepsDate}
+stepsDate <- ddply(datNoNA, "date", summarise, steps = sum(steps))
 ```
-2. Chart steps by date as a bar plot with mean line
-```{r histStepsNoNA}
-p <- qplot(date, steps, data = stepsNoNA, geom = "bar", stat = "identity")
-p + geom_hline(yintercept = mean(stepsNoNA$steps), color = "red", size = 2)
-# Add a lavel to line
+2. Chart steps by date as a bar plot with mean and median lines
+```{r histStepsDate}
+# Bar plot of steps by date without NAs
+p <- qplot(date, steps, data = stepsDate, geom = "bar", stat = "identity")
+
+# Horizontal line at mean
+pMean <- mean(stepsDate$steps)
+p <- p + geom_hline(yintercept = pMean, color = "red", size = 2)
+# Label mean line
+label <- paste("Mean =", as.character(round(pMean, digits = 2)))
+posX <- with(stepsDate, date[round(length(date) / 2)])
+posY <- 20000
+p <- p + annotate("text", x = posX, y = posY, label = label, color = "red")
+
+# Horizontal line at median
+pMedian <- median(stepsDate$steps)
+p <- p + geom_hline(yintercept = pMedian, color = "blue", linetype = 2, size = 1)
+# Label median line
+label <- paste("Median =", as.character(pMedian))
+posY <- 19000
+p <- p + annotate("text", x = posX, y = posY, label = label, color = "blue")
+
+# Print plot
+p
+rm(p, label, posX, posY)
 ```
 
 ### What is the average daily activity pattern?
+1. Summarise steps by interval (excluding NAs)
+```{r sumStepsIntv}
+stepsIntv <- ddply(datNoNA, "interval", summarise, steps = mean(steps))
+```
+2. Chart steps by date as a bar plot with mean and median lines
+```{r histStepsIntv}
+# Bar plot of steps by date without NAs
+p <- qplot(interval, steps, data = stepsIntv, geom = "line")
+
+# Label max
+
+# Print plot
+p
+rm(p)
+```
 
 ### Imputing missing values
 
