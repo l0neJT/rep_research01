@@ -50,7 +50,7 @@ histStepsDate <- function(data) {
     p <- p + geom_hline(yintercept = pMedian, color = "blue", linetype = 2, size = 1)
     # Label median line
     posY <- 19000
-    label <- paste("Median =", as.character(pMedian))
+    label <- paste("Median =", format(pMedian, nsmall = 1))
     p <- p + annotate("text", x = posX, y = posY, label = label, color = "blue")
     
     # Return plot
@@ -61,18 +61,18 @@ histStepsDate(stepsDate)
 
 ### What is the average daily activity pattern?
 1. Summarise steps by interval (excluding NAs)
-```{r avgStepsIntv}
-stepsIntv <- ddply(datNoNA, "interval", summarise, steps = mean(steps))
+```{r avgStepsInterval}
+stepsInterval <- ddply(datNoNA, "interval", summarise, steps = mean(steps))
 ```
-2. Chart steps by date as a bar plot with mean and median lines
-```{r lineStepsIntv}
-lineStepsIntv <- function(data) {
+2. Chart steps by interval as a line with max
+```{r lineStepsInterval}
+lineStepsInterval <- function(data) {
     # Bar plot of steps by date without NAs
     p <- qplot(interval, steps, data = data, geom = "line")
     
     # Label max
     stepsMax <- max(data$steps)
-    intvMax <- subset(stepsIntv, steps == stepsMax, select = interval)[[1]]
+    intvMax <- subset(data, steps == stepsMax, select = interval)[[1]]
     posX <- intvMax + 825L
     posY <- stepsMax
     label <- paste("Interval =", intvMax, "| Max Avg Steps = ", format(stepsMax))
@@ -82,9 +82,27 @@ lineStepsIntv <- function(data) {
     # Return plot
     p
 }
-lineStepsIntv(stepsIntv)
+lineStepsInterval(stepsInterval)
 ```
 
 ### Imputing missing values
+1. Replace NAs with mean for interval
+``` {r replaceNAs, cache = TRUE}
+replaceNA <- function(sSteps, iInterval, data = stepsInterval) {
+    ifelse(is.na(sSteps), subset(data, iInterval == interval, select = steps)[[1]], sSteps)
+}
+datReplaceNA <- ddply(dat, c("date", "interval"), transform, steps = replaceNA(steps, interval))
+```
+
+**Consider overlaying new hist on top of old**
+
+2. Summarize steps by date and chart as a bar plot with mean and median lines
+``` {r histReplaceNA}
+histStepsDate(ddply(datReplaceNA, "date", summarise, steps = sum(steps)))
+```
+3. Summarize steps by interval and chart as a line with max
+```{r avgReplaceNA}
+lineStepsInterval(ddply(datReplaceNA, "interval", summarise, steps = mean(steps)))
+```
 
 ### Are there differences in activity patterns between weekdays and weekends?
