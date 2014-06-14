@@ -1,6 +1,6 @@
 # Reproducible Research: Peer Assessment 1
 ## [github.com/l0neJT](http://www.github.com/l0neJT)
-## 9 June 2014
+## 14 June 2014
 
 ### Introduction
 This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.com/) in conjunction with the [knitr package](http://cran.r-project.org/web/packages/knitr/index.html) to produce literate code. Forked from [rdpeng/RepData_PeerAssessment1](http://github.com/rdpeng/RepData_PeerAssessment1).
@@ -63,7 +63,7 @@ This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.co
         pMean <- mean(data$steps)
         p <- p + geom_hline(yintercept = pMean, color = "red", size = 2)
         # Label mean line
-        posX <- with(data, date[round(length(date) / 2)])
+        posX <- with(data, date[ceiling(length(date) / 2)])
         posY <- 20000
         label <- paste("Mean =", format(pMean, nsmall = 1))
         p <- p + annotate("text", x = posX, y = posY, label = label,
@@ -82,7 +82,7 @@ This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.co
         # Return plot
         p
     }
-    histStepsDate(stepsDate)
+    histStepsDate(stepsDate) + labs(title = "Total Steps by Date (Remove NAs)")
     ```
     
     ![plot of chunk histStepsDate](figure/histStepsDate.png) 
@@ -118,7 +118,8 @@ This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.co
         # Return plot
         p
     }
-    lineStepsInterval(stepsInterval)
+    lineStepsInterval(stepsInterval) + labs(title =
+                                            "Mean Steps by Interval (Remove NAs)")
     ```
     
     ![plot of chunk lineStepsInterval](figure/lineStepsInterval.png) 
@@ -141,20 +142,30 @@ This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.co
 
     
     ```r
-    histStepsDate(ddply(datReplaceNA, "date", summarise, steps = sum(steps)))
+    datTemp <- ddply(datReplaceNA, "date", summarise, steps = sum(steps))
+    histStepsDate(datTemp) + labs(title = "Total Steps by Date (Replace NAs)")
     ```
     
     ![plot of chunk histReplaceNA](figure/histReplaceNA.png) 
+    
+    ```r
+    rm(datTemp)
+    ```
 
 3. Summarize steps by interval and chart as a line with max
 
     
     ```r
-    lineStepsInterval(ddply(datReplaceNA, "interval", summarise,
-                      steps = mean(steps)))
+    datTemp <- ddply(datReplaceNA, "interval", summarise, steps = mean(steps))
+    lineStepsInterval(datTemp) + labs(title =
+                                      "Mean Steps by Interval (Replace NAs)")
     ```
     
     ![plot of chunk avgReplaceNA](figure/avgReplaceNA.png) 
+    
+    ```r
+    rm(datTemp)
+    ```
 
 ### Are there differences in activity patterns between weekdays and weekends?
 1. Add weekday character colum to data
@@ -181,8 +192,9 @@ This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.co
 
     
     ```r
-    qplot(interval, steps, data = stepsSplit, geom = c("line", "smooth"),
-          facets = . ~ weekday)
+    p <- qplot(interval, steps, data = stepsSplit, geom = c("line", "smooth"),
+               facets = . ~ weekday)
+    p + labs(title = "Mean Steps by Interval (Replace NAs)")
     ```
     
     ```
@@ -191,3 +203,7 @@ This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.co
     ```
     
     ![plot of chunk lineStepsSplit](figure/lineStepsSplit.png) 
+    
+    ```r
+    rm(p)
+    ```
