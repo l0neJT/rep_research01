@@ -45,35 +45,34 @@ stepsDate <- ddply(datNoNA, "date", summarise, steps = sum(steps))
 2. Chart steps by date as a bar plot with mean and median lines
 
 ```r
-# Bar plot of steps by date without NAs
-p <- qplot(date, steps, data = stepsDate, geom = "bar", stat = "identity")
-
-# Horizontal line at mean
-pMean <- mean(stepsDate$steps)
-p <- p + geom_hline(yintercept = pMean, color = "red", size = 2)
-# Label mean line
-posX <- with(stepsDate, date[round(length(date) / 2)])
-posY <- 20000
-label <- paste("Mean =", format(pMean, nsmall = 1))
-p <- p + annotate("text", x = posX, y = posY, label = label, color = "red")
-
-# Horizontal line at median
-pMedian <- median(stepsDate$steps)
-p <- p + geom_hline(yintercept = pMedian, color = "blue", linetype = 2, size = 1)
-# Label median line
-posY <- 19000
-label <- paste("Median =", as.character(pMedian))
-p <- p + annotate("text", x = posX, y = posY, label = label, color = "blue")
-
-# Print plot
-p
+histStepsDate <- function(data) {
+    # Bar plot of steps by date without NAs
+    p <- qplot(date, steps, data = data, geom = "bar", stat = "identity")
+    
+    # Horizontal line at mean
+    pMean <- mean(data$steps)
+    p <- p + geom_hline(yintercept = pMean, color = "red", size = 2)
+    # Label mean line
+    posX <- with(data, date[round(length(date) / 2)])
+    posY <- 20000
+    label <- paste("Mean =", format(pMean, nsmall = 1))
+    p <- p + annotate("text", x = posX, y = posY, label = label, color = "red")
+    
+    # Horizontal line at median
+    pMedian <- median(data$steps)
+    p <- p + geom_hline(yintercept = pMedian, color = "blue", linetype = 2, size = 1)
+    # Label median line
+    posY <- 19000
+    label <- paste("Median =", as.character(pMedian))
+    p <- p + annotate("text", x = posX, y = posY, label = label, color = "blue")
+    
+    # Return plot
+    p
+}
+histStepsDate(stepsDate)
 ```
 
 ![plot of chunk histStepsDate](figure/histStepsDate.png) 
-
-```r
-rm(p, label, posX, posY) # Cleanup variables
-```
 
 ### What is the average daily activity pattern?
 1. Summarise steps by interval (excluding NAs)
@@ -84,27 +83,26 @@ stepsIntv <- ddply(datNoNA, "interval", summarise, steps = mean(steps))
 2. Chart steps by date as a bar plot with mean and median lines
 
 ```r
-# Bar plot of steps by date without NAs
-p <- qplot(interval, steps, data = stepsIntv, geom = "line")
-
-# Label max
-stepsMax <- max(stepsIntv$steps)
-intvMax <- subset(stepsIntv, steps == stepsMax, select = interval)[[1]]
-posX <- intvMax + 825L
-posY <- stepsMax
-label <- paste("Interval =", intvMax, "| Max Avg Steps = ", format(stepsMax))
-p <- p + annotate("point", x = intvMax, y = stepsMax, color = "red", size = 5)
-p <- p + annotate("text", x = posX, y = posY, color = "red", label = label)
-
-# Print plot
-p
+lineStepsIntv <- function(data) {
+    # Bar plot of steps by date without NAs
+    p <- qplot(interval, steps, data = data, geom = "line")
+    
+    # Label max
+    stepsMax <- max(data$steps)
+    intvMax <- subset(stepsIntv, steps == stepsMax, select = interval)[[1]]
+    posX <- intvMax + 825L
+    posY <- stepsMax
+    label <- paste("Interval =", intvMax, "| Max Avg Steps = ", format(stepsMax))
+    p <- p + annotate("point", x = intvMax, y = stepsMax, color = "red", size = 5)
+    p <- p + annotate("text", x = posX, y = posY, color = "red", label = label)
+    
+    # Return plot
+    p
+}
+lineStepsIntv(stepsIntv)
 ```
 
-![plot of chunk histStepsIntv](figure/histStepsIntv.png) 
-
-```r
-rm(p, stepsMax, intvMax, posX, posY, label) # Cleanup variables
-```
+![plot of chunk lineStepsIntv](figure/lineStepsIntv.png) 
 
 ### Imputing missing values
 
