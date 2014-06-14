@@ -8,147 +8,186 @@ This assignment demonstrates the use of [R Markdown](http://rmarkdown.rstudio.co
 ### Loading and preprocessing the data
 1. Load packages [plyr](http://cran.r-project.org/web/packages/plyr/index.html) and [ggplot2](http://cran.r-project.org/web/packages/ggplot2/index.html)
 
-```r
-library(plyr)
-library(ggplot2)
-```
+    
+    ```r
+    library(plyr)
+    library(ggplot2)
+    ```
+
 2. Load data from file activity.csv
 
-```r
-dat <- read.csv("./data/activity.csv")
-```
+    
+    ```r
+    dat <- read.csv("./data/activity.csv")
+    ```
+
 3. Transform the 'date' column from factor into date
+    
+    
+    ```r
+    dat <- transform(dat, date = as.Date(date, format = "%Y-%m-%d"))
+    str(dat)
+    ```
+    
+    ```
+    ## 'data.frame':	17568 obs. of  3 variables:
+    ##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+    ##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+    ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+    ```
 
-```r
-dat <- transform(dat, date = as.Date(date, format = "%Y-%m-%d"))
-str(dat)
-```
-
-```
-## 'data.frame':	17568 obs. of  3 variables:
-##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
-##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
-##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
-```
 4. Remove NAs for first analyses
-
-```r
-datNoNA <- dat[!is.na(dat$steps), ]
-```
+    
+    
+    ```r
+    datNoNA <- dat[!is.na(dat$steps), ]
+    ```
 
 ### What is mean total number of steps taken per day?
 1. Summarise steps by date (excluding NAs)
 
-```r
-stepsDate <- ddply(datNoNA, "date", summarise, steps = sum(steps))
-```
+    
+    ```r
+    stepsDate <- ddply(datNoNA, "date", summarise, steps = sum(steps))
+    ```
+
 2. Chart steps by date as a bar plot with mean and median lines
 
-```r
-histStepsDate <- function(data) {
-    # Bar plot of steps by date without NAs
-    p <- qplot(date, steps, data = data, geom = "bar", stat = "identity")
     
-    # Horizontal line at mean
-    pMean <- mean(data$steps)
-    p <- p + geom_hline(yintercept = pMean, color = "red", size = 2)
-    # Label mean line
-    posX <- with(data, date[round(length(date) / 2)])
-    posY <- 20000
-    label <- paste("Mean =", format(pMean, nsmall = 1))
-    p <- p + annotate("text", x = posX, y = posY, label = label, color = "red")
+    ```r
+    histStepsDate <- function(data) {
+        # Bar plot of steps by date without NAs
+        p <- qplot(date, steps, data = data, geom = "bar", stat = "identity")
+        
+        # Horizontal line at mean
+        pMean <- mean(data$steps)
+        p <- p + geom_hline(yintercept = pMean, color = "red", size = 2)
+        # Label mean line
+        posX <- with(data, date[round(length(date) / 2)])
+        posY <- 20000
+        label <- paste("Mean =", format(pMean, nsmall = 1))
+        p <- p + annotate("text", x = posX, y = posY, label = label,
+                          color = "red")
+        
+        # Horizontal line at median
+        pMedian <- median(data$steps)
+        p <- p + geom_hline(yintercept = pMedian, color = "blue", linetype = 2,
+                            size = 1)
+        # Label median line
+        posY <- 19000
+        label <- paste("Median =", format(pMedian, nsmall = 1))
+        p <- p + annotate("text", x = posX, y = posY, label = label,
+                          color = "blue")
+        
+        # Return plot
+        p
+    }
+    histStepsDate(stepsDate)
+    ```
     
-    # Horizontal line at median
-    pMedian <- median(data$steps)
-    p <- p + geom_hline(yintercept = pMedian, color = "blue", linetype = 2, size = 1)
-    # Label median line
-    posY <- 19000
-    label <- paste("Median =", format(pMedian, nsmall = 1))
-    p <- p + annotate("text", x = posX, y = posY, label = label, color = "blue")
-    
-    # Return plot
-    p
-}
-histStepsDate(stepsDate)
-```
-
-![plot of chunk histStepsDate](figure/histStepsDate.png) 
+    ![plot of chunk histStepsDate](figure/histStepsDate.png) 
 
 ### What is the average daily activity pattern?
 1. Summarise steps by interval (excluding NAs)
 
-```r
-stepsInterval <- ddply(datNoNA, "interval", summarise, steps = mean(steps))
-```
+    
+    ```r
+    stepsInterval <- ddply(datNoNA, "interval", summarise, steps = mean(steps))
+    ```
+
 2. Chart steps by interval as a line with max
 
-```r
-lineStepsInterval <- function(data) {
-    # Bar plot of steps by date without NAs
-    p <- qplot(interval, steps, data = data, geom = "line")
     
-    # Label max
-    stepsMax <- max(data$steps)
-    intvMax <- subset(data, steps == stepsMax, select = interval)[[1]]
-    posX <- intvMax + 825L
-    posY <- stepsMax
-    label <- paste("Interval =", intvMax, "| Max Avg Steps = ", format(stepsMax))
-    p <- p + annotate("point", x = intvMax, y = stepsMax, color = "red", size = 5)
-    p <- p + annotate("text", x = posX, y = posY, color = "red", label = label)
+    ```r
+    lineStepsInterval <- function(data) {
+        # Bar plot of steps by date without NAs
+        p <- qplot(interval, steps, data = data, geom = "line")
+        
+        # Label max
+        stepsMax <- max(data$steps)
+        intvMax <- subset(data, steps == stepsMax, select = interval)[[1]]
+        posX <- intvMax + 825L
+        posY <- stepsMax
+        label <- paste("Interval =", intvMax, "| Max Avg Steps = ",
+                       format(stepsMax))
+        p <- p + annotate("point", x = intvMax, y = stepsMax, color = "red",
+                          size = 5)
+        p <- p + annotate("text", x = posX, y = posY, color = "red",
+                          label = label)
+        
+        # Return plot
+        p
+    }
+    lineStepsInterval(stepsInterval)
+    ```
     
-    # Return plot
-    p
-}
-lineStepsInterval(stepsInterval)
-```
-
-![plot of chunk lineStepsInterval](figure/lineStepsInterval.png) 
+    ![plot of chunk lineStepsInterval](figure/lineStepsInterval.png) 
 
 ### Imputing missing values
 1. Replace NAs with mean for interval
 
-```r
-replaceNA <- function(sSteps, iInterval, data = stepsInterval) {
-    ifelse(is.na(sSteps), subset(data, iInterval == interval, select = steps)[[1]], sSteps)
-}
-datReplaceNA <- ddply(dat, c("date", "interval"), transform, steps = replaceNA(steps, interval))
-```
-
-**Consider overlaying new hist on top of old**
+    
+    ```r
+    replaceNA <- function(sSteps, iInterval, data = stepsInterval) {
+        ifelse(is.na(sSteps),
+               subset(data, iInterval == interval, select = steps)[[1]],
+               sSteps)
+    }
+    datReplaceNA <- ddply(dat, c("date", "interval"), transform,
+                          steps = replaceNA(steps, interval))
+    ```
 
 2. Summarize steps by date and chart as a bar plot with mean and median lines
 
-```r
-histStepsDate(ddply(datReplaceNA, "date", summarise, steps = sum(steps)))
-```
+    
+    ```r
+    histStepsDate(ddply(datReplaceNA, "date", summarise, steps = sum(steps)))
+    ```
+    
+    ![plot of chunk histReplaceNA](figure/histReplaceNA.png) 
 
-![plot of chunk histReplaceNA](figure/histReplaceNA.png) 
 3. Summarize steps by interval and chart as a line with max
 
-```r
-lineStepsInterval(ddply(datReplaceNA, "interval", summarise, steps = mean(steps)))
-```
-
-![plot of chunk avgReplaceNA](figure/avgReplaceNA.png) 
+    
+    ```r
+    lineStepsInterval(ddply(datReplaceNA, "interval", summarise,
+                      steps = mean(steps)))
+    ```
+    
+    ![plot of chunk avgReplaceNA](figure/avgReplaceNA.png) 
 
 ### Are there differences in activity patterns between weekdays and weekends?
 1. Add weekday character colum to data
 
-```r
-weekDayOrEnd <- function(date) {
-    ifelse(format(date, format = "%w") %in% 1:5, "weekday", "weekend")
-}
-datReplaceNA <- transform(datReplaceNA, weekday = weekDayOrEnd(date))
-```
+    
+    ```r
+    weekDayOrEnd <- function(date) {
+        ifelse(format(date, format = "%w") %in% 1:5,
+               "weekday",
+               "weekend")
+    }
+    datReplaceNA <- transform(datReplaceNA, weekday = weekDayOrEnd(date))
+    ```
+
 2. Summarise steps by interval categorized by weekday/weekend
 
-```r
-stepsSplit <- ddply(datReplaceNA, c("interval", "weekday"), summarise, steps = mean(steps))
-```
+    
+    ```r
+    stepsSplit <- ddply(datReplaceNA, c("interval", "weekday"), summarise,
+                        steps = mean(steps))
+    ```
+
 3. Chart steps by interval as a line with facets by weekday/weekend
 
-```r
-qplot(interval, steps, data = stepsSplit, geom = c("line", "quantile"), facets = . ~ weekday)
-```
-
-![plot of chunk lineStepsSplit](figure/lineStepsSplit.png) 
+    
+    ```r
+    qplot(interval, steps, data = stepsSplit, geom = c("line", "smooth"),
+          facets = . ~ weekday)
+    ```
+    
+    ```
+    ## geom_smooth: method="auto" and size of largest group is <1000, so using loess. Use 'method = x' to change the smoothing method.
+    ## geom_smooth: method="auto" and size of largest group is <1000, so using loess. Use 'method = x' to change the smoothing method.
+    ```
+    
+    ![plot of chunk lineStepsSplit](figure/lineStepsSplit.png) 
