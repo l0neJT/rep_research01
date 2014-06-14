@@ -52,17 +52,17 @@ p <- qplot(date, steps, data = stepsDate, geom = "bar", stat = "identity")
 pMean <- mean(stepsDate$steps)
 p <- p + geom_hline(yintercept = pMean, color = "red", size = 2)
 # Label mean line
-label <- paste("Mean =", as.character(round(pMean, digits = 2)))
 posX <- with(stepsDate, date[round(length(date) / 2)])
 posY <- 20000
+label <- paste("Mean =", format(pMean, nsmall = 1))
 p <- p + annotate("text", x = posX, y = posY, label = label, color = "red")
 
 # Horizontal line at median
 pMedian <- median(stepsDate$steps)
 p <- p + geom_hline(yintercept = pMedian, color = "blue", linetype = 2, size = 1)
 # Label median line
-label <- paste("Median =", as.character(pMedian))
 posY <- 19000
+label <- paste("Median =", as.character(pMedian))
 p <- p + annotate("text", x = posX, y = posY, label = label, color = "blue")
 
 # Print plot
@@ -72,7 +72,7 @@ p
 ![plot of chunk histStepsDate](figure/histStepsDate.png) 
 
 ```r
-rm(p, label, posX, posY)
+rm(p, label, posX, posY) # Cleanup variables
 ```
 
 ### What is the average daily activity pattern?
@@ -87,7 +87,14 @@ stepsIntv <- ddply(datNoNA, "interval", summarise, steps = mean(steps))
 # Bar plot of steps by date without NAs
 p <- qplot(interval, steps, data = stepsIntv, geom = "line")
 
-# Max label
+# Label max
+stepsMax <- max(stepsIntv$steps)
+intvMax <- subset(stepsIntv, steps == stepsMax, select = interval)[[1]]
+posX <- intvMax + 825L
+posY <- stepsMax
+label <- paste("Interval =", intvMax, "| Max Avg Steps = ", format(stepsMax))
+p <- p + annotate("point", x = intvMax, y = stepsMax, color = "red", size = 5)
+p <- p + annotate("text", x = posX, y = posY, color = "red", label = label)
 
 # Print plot
 p
@@ -96,7 +103,7 @@ p
 ![plot of chunk histStepsIntv](figure/histStepsIntv.png) 
 
 ```r
-rm(p)
+rm(p, stepsMax, intvMax, posX, posY, label) # Cleanup variables
 ```
 
 ### Imputing missing values
