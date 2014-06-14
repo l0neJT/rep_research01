@@ -113,6 +113,9 @@ replaceNA <- function(sSteps, iInterval, data = stepsInterval) {
 }
 datReplaceNA <- ddply(dat, c("date", "interval"), transform, steps = replaceNA(steps, interval))
 ```
+
+**Consider overlaying new hist on top of old**
+
 2. Summarize steps by date and chart as a bar plot with mean and median lines
 
 ```r
@@ -129,3 +132,23 @@ lineStepsInterval(ddply(datReplaceNA, "interval", summarise, steps = mean(steps)
 ![plot of chunk avgReplaceNA](figure/avgReplaceNA.png) 
 
 ### Are there differences in activity patterns between weekdays and weekends?
+1. Add weekday character colum to data
+
+```r
+weekDayOrEnd <- function(date) {
+    ifelse(format(date, format = "%w") %in% 1:5, "weekday", "weekend")
+}
+datReplaceNA <- transform(datReplaceNA, weekday = weekDayOrEnd(date))
+```
+2. Summarise steps by interval categorized by weekday/weekend
+
+```r
+stepsSplit <- ddply(datReplaceNA, c("interval", "weekday"), summarise, steps = mean(steps))
+```
+3. Chart steps by interval as a line with facets by weekday/weekend
+
+```r
+qplot(interval, steps, data = stepsSplit, geom = c("line", "quantile"), facets = . ~ weekday)
+```
+
+![plot of chunk lineStepsSplit](figure/lineStepsSplit.png) 

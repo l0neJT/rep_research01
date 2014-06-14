@@ -106,3 +106,18 @@ lineStepsInterval(ddply(datReplaceNA, "interval", summarise, steps = mean(steps)
 ```
 
 ### Are there differences in activity patterns between weekdays and weekends?
+1. Add weekday character colum to data
+``` {r addIsWeekday, cache = TRUE}
+weekDayOrEnd <- function(date) {
+    ifelse(format(date, format = "%w") %in% 1:5, "weekday", "weekend")
+}
+datReplaceNA <- transform(datReplaceNA, weekday = weekDayOrEnd(date))
+```
+2. Summarise steps by interval categorized by weekday/weekend
+```{r avgStepsSplit}
+stepsSplit <- ddply(datReplaceNA, c("interval", "weekday"), summarise, steps = mean(steps))
+```
+3. Chart steps by interval as a line with facets by weekday/weekend
+```{r lineStepsSplit}
+qplot(interval, steps, data = stepsSplit, geom = c("line", "smooth"), facets = . ~ weekday)
+```
